@@ -1,0 +1,16 @@
+# https://taskfile.dev
+
+version: '3'
+
+# vars:
+#   GREETING: Hello, World!
+
+tasks:
+  run_sqlite3:
+    cmds:
+      - /opt/homebrew/opt/sqlite/bin/sqlite3 -cmd '.load  target/debug/libflex_sqlite_rs.dylib'
+    silent: false
+  build:
+    cmds:
+      - cargo build
+    silent: false

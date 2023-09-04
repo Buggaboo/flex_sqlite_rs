@@ -1,0 +1,17 @@
+[package]
+name = "flex_sqlite_rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+base64 = "0.21.3"
+
+flexbuffers = "2.0.0"
+#sqlite-loadable = "0.0.7"
+sqlite-loadable = { git = "https://github.com/Buggaboo/sqlite-loadable-rs", branch = "feature/add-create-window-function" }
+
+[dev-dependencies]
+rusqlite = "0.29.0"
+
+[lib]
+crate-type=["lib", "staticlib", "cdylib"]
