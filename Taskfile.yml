@@ -6,11 +6,8 @@ version: '3'
 #   GREETING: Hello, World!
 
 tasks:
-  run_sqlite3:
+  load_test:
     cmds:
-      - /opt/homebrew/opt/sqlite/bin/sqlite3 -cmd '.load  target/debug/libflex_sqlite_rs.dylib'
+      - sqlite3 -init test.sql
     silent: false
-  build:
-    cmds:
-      - cargo build
-    silent: false
+
