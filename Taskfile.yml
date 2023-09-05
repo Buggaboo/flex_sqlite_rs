@@ -10,4 +10,8 @@ tasks:
     cmds:
       - sqlite3 -init test.sql
     silent: false
+  valgrind:
+    cmds:
+      - VALGRINDFLAGS="--leak-check=yes --trace-children=yes" cargo valgrind test
+    silent: false
 
