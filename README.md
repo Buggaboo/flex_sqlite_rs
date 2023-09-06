@@ -9,6 +9,7 @@ It seems that the base64 payload of flatbuffers are a lot larger than flexbuffer
 All we need now is a magic attribute that generates the packing and unpacking code for flexbuffers.
 
 ## TODO
+- [ ] create dynamic sqlite3 aggregate function, that will use column names as keys
 - [ ] Create attribute to generate unpacking function for arbitrary columns
 - [ ] Benchmark flex vs flat packing speed
 - [ ] Benchmark flex vs flat unpacking speed
