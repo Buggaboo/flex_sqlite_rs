@@ -21,6 +21,6 @@ mod tests {
         let result: String = conn.query_row("SELECT flex_string_int(x,y) FROM t3",
             (), |x| x.get(0)).unwrap();
 
-        assert_eq!(result, "c3RyaW5nX2tleQABZQBpbnRfa2V5AAIJGAIBAgERBBQEJAE".to_string());
+        assert_eq!(result, "YQABAwEBAQQEYgABAwEBAQUEYwABAwEBAQMEZAABAwEBAQgEZQABAwEBAQEEBScfFw8HJCQkJCQKKAE");
     }
 }

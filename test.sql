@@ -1,4 +1,4 @@
-.load target/debug/deps/libflex_sqlite_rs
+.load target/debug/libflex_sqlite_rs
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 CREATE TABLE t3(x TEXT, y INTEGER);

@@ -1,2 +1,2 @@
 # flex_sqlite_rs
-PoC: Sqlite extension to spit out flexbuffers, in rust
+PoC: Sqlite3 extension to collect sql rows, and spit out flexbuffers, with rust
