@@ -11,10 +11,6 @@ use sqlite_loadable::{api, FunctionFlags};
 
 use base64::{Engine as _, engine::general_purpose};
 
-
-#[derive(Debug, Clone)]
-struct FlexError;
-
 pub fn x_step(_context: *mut sqlite3_context, values: &[*mut sqlite3_value], aux: &mut Vec<(String, i64)>) -> Result<()> {
     let string_value = api::value_text(values.get(0).expect("should be text 1"));
     let int_value = api::value_int64(values.get(1).expect("should be int64"));
@@ -24,6 +20,7 @@ pub fn x_step(_context: *mut sqlite3_context, values: &[*mut sqlite3_value], aux
     Ok(())
 }
 
+/// First column is the key
 pub fn x_final(context: *mut sqlite3_context, aux: &mut Vec<(String, i64)>) -> Result<()> {
     let mut builder = Builder::default();
     let mut vector_builder = builder.start_vector();
@@ -42,51 +39,53 @@ pub fn x_final(context: *mut sqlite3_context, aux: &mut Vec<(String, i64)>) -> R
     Ok(())
 }
 
-
-/// General implementation
+/// General implementation, the passed comma-separated strings are the keys
 pub fn x_step_flex(_context: *mut sqlite3_context, values: &[*mut sqlite3_value], aux: &mut Vec<Vec::<*mut sqlite3_value>>) -> Result<()> {
     aux.push(values.to_vec());
 
     Ok(())
 }
 
-/// This will only work if .headers ON
+/// First parameter should be a comma-separated strings
 pub fn x_final_flex(context: *mut sqlite3_context, aux: &mut Vec<Vec<*mut sqlite3_value>>) -> Result<()> {
 
-    // first row of values must be all strings
-    let first_row = aux.first().expect("first row values");
+    let mut builder = Builder::default();
+    let mut vector_builder = builder.start_vector();
 
-    let first_row_are_strings = first_row.iter()
-        .all(|&ptr|api::value_text_notnull(&ptr).is_ok());
+    let first_row = aux.get(0).expect("first row");
+    let first_column_value = api::value_text(first_row.get(0).expect("should be sqlite3 value ptr")).expect("should be text");
+    let vec_keys: Vec<String> = String::from(first_column_value)
+        .split(',')
+        .map(|s| s.trim().to_string())
+        .collect();
 
-    if !first_row_are_strings {
-        return Err(Error::new_message("First rows must be all strings".to_string()));
+    // println!("{:?}", vec_keys);
+
+    if vec_keys.len() != first_row.len() - 1 {
+        return Err(Error::new_message("Number of header strings do not match the columns"));
     }
 
-    let mut builder = Builder::default();
-    let mut vector_builder = builder.start_vector();    
-
-    for r in 1..aux.len() {
+    for r in 0..aux.len() {
         let row = aux.get(r).expect("should be a vec");
-        for c in 0..row.len() {
-            let mut map = vector_builder.start_map();
-            let key_result = api::value_text(first_row.get(0).expect("should be text 1"));
+        let mut map = vector_builder.start_map();
+        for c in 1..row.len() {
+            let key_result = vec_keys.get(c - 1).expect("should be a key");
             let value_ptr = aux.get(r).expect("should be >1 row").get(c).expect("should be a columnt value");
             let value_type = api::value_type(value_ptr);
             match value_type {
                 api::ValueType::Text => 
-                    map.push(key_result.expect("should be a key"), api::value_text(value_ptr).expect("should be a string")),
+                    map.push(key_result, api::value_text(value_ptr).expect("should be a string")),
                 api::ValueType::Integer =>
-                    map.push(key_result.expect("should be a key"), api::value_int64(value_ptr)),
+                    map.push(key_result, api::value_int64(value_ptr)),
                 api::ValueType::Float =>
-                    map.push(key_result.expect("should be a key"), api::value_double(value_ptr)),
+                    map.push(key_result, api::value_double(value_ptr)),
                 api::ValueType::Blob =>
-                    map.push(key_result.expect("should be a key"), api::value_blob(value_ptr)),
+                    map.push(key_result, api::value_blob(value_ptr)),
                 api::ValueType::Null =>
-                    map.push(key_result.expect("should be a key"), 0),
+                    map.push(key_result, 0),
             }
-            map.end_map();
         }
+        map.end_map();
     }
 
     vector_builder.end_vector();
